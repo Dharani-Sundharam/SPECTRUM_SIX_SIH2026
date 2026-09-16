@@ -1,0 +1,5 @@
+../Core/Src/main.c:45:13:debug_print_params	1
+../Core/Src/main.c:62:5:main	13
+../Core/Src/main.c:147:6:SystemClock_Config	3
+../Core/Src/main.c:182:6:HAL_DAC_ConvCpltCallbackCh1	1
+../Core/Src/main.c:188:6:Error_Handler	1

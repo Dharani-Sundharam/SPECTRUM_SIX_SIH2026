@@ -1,0 +1,10 @@
+../Core/Src/chirp_gen.c:39:24:clamp_u16	16	static
+../Core/Src/chirp_gen.c:50:6:chirp_gen_compute	104	static
+../Core/Src/chirp_gen.c:81:6:chirp_debug_gpio_init	32	static
+../Core/Src/chirp_gen.c:93:19:chirp_fire	32	static
+../Core/Src/chirp_gen.c:118:6:chirp_dma_complete_cb	16	static
+../Core/Src/chirp_gen.c:126:9:chirp_is_active	4	static
+../Core/Src/chirp_gen.c:135:10:chirp_gen_compute_var	72	static
+../Core/Src/chirp_gen.c:161:10:geometric_sweep_compute	88	static
+../Core/Src/chirp_gen.c:191:10:phase_coded_compute	104	static
+../Core/Src/chirp_gen.c:227:19:chirp_fire_var	40	static

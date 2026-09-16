@@ -1,0 +1,4 @@
+../Core/Src/sensors.c:118:17:adc_read_channel	40	static
+../Core/Src/sensors.c:133:14:adc_map	32	static
+../Core/Src/sensors.c:143:6:sensors_init	16	static
+../Core/Src/sensors.c:152:13:sensors_read	64	static

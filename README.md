@@ -100,12 +100,11 @@ The STM32's DAC output is a zero-order-hold staircase — each sample holds its 
 | Component | Value |
 |---|---|
 | R1 = R2 | 2.2 kΩ |
-| C1 (node-to-GND) | 100 pF |
+| C1 (node-to-GND) | 56 pF |
 | C2 (feedback) | 220 pF |
-| Cutoff frequency | ≈ 488 kHz |
-| Q | ≈ 0.46 (gentle rolloff, no peaking) |
+| Cutoff frequency | ≈ 625 kHz |
+| Q | ≈ 0.6 (gentle rolloff, no peaking) |
 
-> **Note:** 488 kHz sits just below the 500 kHz upper edge of the sweep, so the top of the band sees somewhat more attenuation than a cutoff placed further above the signal band would. Characterized and documented rather than treated as a defect — a design trade-off of the available component values.
 
 **Power — ICL7660 charge-pump voltage inverter**
 LM318 is not rail-to-rail, so a single 5V supply leaves little headroom for the signal's peaks. The ICL7660 generates a −5V rail from the STM32's existing +5V, giving LM318 a proper ±5V dual supply.

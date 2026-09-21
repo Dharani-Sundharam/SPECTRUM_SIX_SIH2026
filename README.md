@@ -4,8 +4,8 @@
 **"The eye of Varuna" — a real-time, environment-adaptive LFM sonar chirp transmitter for AUVs.**
 
 
-  ![VaruNaad hardware prototype](chirp)
-
+  Add a hero image/GIF here once available:
+  ![VaruNaad hardware prototype](chirp.jpg)
 
 [![Platform](https://img.shields.io/badge/MCU-STM32F407VE-blue)](https://www.st.com/en/microcontrollers-microprocessors/stm32f407ve.html)
 [![Language](https://img.shields.io/badge/firmware-C%20%2F%20HAL-orange)]()
@@ -42,15 +42,15 @@ This repository contains the firmware, the analog reconstruction filter design, 
 
 ```mermaid
 flowchart TD
-    A["3 Potentiometers<br/>Nirmalya · Kaalavistar · Ojas"] --> B["ADC1<br/>PA1 / PA2 / PA3"]
+    A["3 Potentiometers<br/>PA1 / PA2 / PA3"] --> B["ADC1<br/>PA1 / PA2 / PA3"]
     B --> C["sensors_read&#40;&#41;<br/>raw counts to f0, f1, duration, amplitude"]
     C --> D["chirp_gen_compute_var&#40;&#41;<br/>Phase-accumulator DDS + Hamming window"]
     D --> E["DMA1 Stream5 Ch7<br/>Normal mode, buffer to DAC1_DHR12R1"]
     F["TIM6 to TRGO<br/>Update Event, fs approx 1.2537 MSPS"] -->|triggers| E
     E --> G["DAC1_CH1 to PA4<br/>12-bit staircase output"]
-    G --> H["Sallen-Key LPF<br/>CA3140 #1, fc approx 590 kHz"]
-    H --> I["Unity-gain buffer<br/>CA3140 #2"]
-    I --> J["Clean sine LFM sweep<br/>to transducer / oscilloscope"]
+    G --> H["Sallen-Key LPF<br/>LM318, R=2.2k, C1=100pF, C2=220pF<br/>fc approx 488 kHz"]
+    K["ICL7660<br/>plus 5V to minus 5V"] -->|dual supply| H
+    H --> J["Clean sine LFM sweep<br/>to transducer / oscilloscope"]
 
     style A fill:#e8f4fd,stroke:#2b7cb3
     style B fill:#e8f4fd,stroke:#2b7cb3
@@ -60,7 +60,7 @@ flowchart TD
     style F fill:#fff3e0,stroke:#e67e22
     style G fill:#fdecea,stroke:#c0392b
     style H fill:#f4ecf7,stroke:#8e44ad
-    style I fill:#f4ecf7,stroke:#8e44ad
+    style K fill:#f4ecf7,stroke:#8e44ad
     style J fill:#eafaf1,stroke:#27ae60
 ```
 
@@ -76,36 +76,48 @@ flowchart TD
 | Debug UART | USART1, PA9(TX)/PA10(RX), 115200 baud |
 | Trigger button | PE4 (active-low) |
 | Scope sync pin | PB0 (high during active burst) |
-| Filter op-amps | 2× CA3140 |
+| Filter op-amp | LM318 |
+| Negative rail generator | ICL7660 (charge-pump voltage inverter) |
 
 ---
 
 ## Potentiometer / Environmental Sensor Mapping
 
-| Knob | Pin | Controls | Range | Simulates |
+| Pot | Pin | Controls | Range | Simulates |
 |---|---|---|---|---|
-| **Nirmalya** *(clarity)* | PA1 (ADC1_IN1) | Sweep bandwidth (f0 fixed @ 100 kHz, f1 scales) | f1: 150 kHz – 500 kHz | Water turbidity — clearer water enables a wider, higher-resolution sweep |
-| **Kaalavistar** *(duration)* | PA2 (ADC1_IN2) | Pulse duration | 0.5 ms – 5 ms | Target distance / required acoustic energy |
-| **Ojas** *(power)* | PA3 (ADC1_IN3) | Amplitude scale | 10% – 100% | Water depth / attenuation compensation |
+| POT1 | PA1 (ADC1_IN1) | Sweep bandwidth (f0 fixed @ 100 kHz, f1 scales) | f1: 150 kHz – 500 kHz | Water turbidity — clearer water enables a wider, higher-resolution sweep |
+| POT2 | PA2 (ADC1_IN2) | Pulse duration | 0.5 ms – 5 ms | Target distance / required acoustic energy |
+| POT3 | PA3 (ADC1_IN3) | Amplitude scale | 10% – 100% | Water depth / attenuation compensation |
 
 ---
 
 ## Analog Reconstruction Filter
 
-The STM32's DAC output is a zero-order-hold staircase — each sample holds its voltage until the next one, which is audible/visible as steps rather than a smooth sine. A 2-stage active filter cleans this into a proper analog sine sweep.
+The STM32's DAC output is a zero-order-hold staircase — each sample holds its voltage until the next one, which is visible as steps rather than a smooth sine. An active Sallen-Key low-pass filter cleans this into a proper analog sine sweep.
 
-**Stage 1 — Sallen-Key low-pass (unity gain, CA3140 #1)**
+**Sallen-Key low-pass (unity gain, LM318), dual-supply generated via ICL7660**
 
 | Component | Value |
 |---|---|
-| R1 = R2 | 2.7 kΩ |
-| C1 = C2 (filter caps) | 100 pF |
-| Cutoff frequency | ≈ 590 kHz |
+| R1 = R2 | 2.2 kΩ |
+| C1 (node-to-GND) | 100 pF |
+| C2 (feedback) | 220 pF |
+| Cutoff frequency | ≈ 488 kHz |
+| Q | ≈ 0.46 (gentle rolloff, no peaking) |
 
-**Stage 2 — Unity-gain output buffer (CA3140 #2)**
-Isolates the filter from downstream load (transducer/amplifier/scope probe) so the load doesn't drag down the tuned cutoff.
+> **Note:** 488 kHz sits just below the 500 kHz upper edge of the sweep, so the top of the band sees somewhat more attenuation than a cutoff placed further above the signal band would. Characterized and documented rather than treated as a defect — a design trade-off of the available component values.
 
-**Power:** both op-amps run off a shared 5V single supply from the STM32 board, with a 100nF decoupling capacitor at each IC's supply pin.
+**Power — ICL7660 charge-pump voltage inverter**
+LM318 is not rail-to-rail, so a single 5V supply leaves little headroom for the signal's peaks. The ICL7660 generates a −5V rail from the STM32's existing +5V, giving LM318 a proper ±5V dual supply.
+
+| ICL7660 Pin | Connection |
+|---|---|
+| 8 (V+) | +5V (from STM32) |
+| 3 (GND) | GND |
+| 2 (CAP+) ↔ 4 (CAP−) | 10 µF capacitor between them |
+| 7 (VOUT) | −5V output → LM318 V− |
+| 7 (VOUT) → GND | 10 µF output smoothing capacitor |
+| 5 (OSC), 6 (LV), 1 (NC) | Left unconnected (internal oscillator, >3.5V operation) |
 
 <!--
   Add filter schematic photo/render here:

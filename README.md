@@ -38,7 +38,7 @@ This repository contains the firmware, the analog reconstruction filter design, 
 
 ---
 
-## Hardware Architecture
+## System Architecture
 
 ```mermaid
 flowchart TD

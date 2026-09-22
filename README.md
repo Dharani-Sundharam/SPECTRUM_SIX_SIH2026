@@ -4,7 +4,6 @@
 **"The eye of Varuna" — a real-time, environment-adaptive LFM sonar chirp transmitter for AUVs.**
 
 
-  Add a hero image/GIF here once available:
   ![VaruNaad hardware prototype](chirp.jpeg)
 
 [![Platform](https://img.shields.io/badge/MCU-STM32F407VE-blue)](https://www.st.com/en/microcontrollers-microprocessors/stm32f407ve.html)

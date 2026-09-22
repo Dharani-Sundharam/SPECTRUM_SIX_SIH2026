@@ -5,7 +5,7 @@
 
 
   Add a hero image/GIF here once available:
-  ![VaruNaad hardware prototype](chirp.jpg)
+  ![VaruNaad hardware prototype](chirp.jpeg)
 
 [![Platform](https://img.shields.io/badge/MCU-STM32F407VE-blue)](https://www.st.com/en/microcontrollers-microprocessors/stm32f407ve.html)
 [![Language](https://img.shields.io/badge/firmware-C%20%2F%20HAL-orange)]()
